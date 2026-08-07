@@ -1,0 +1,23 @@
+from core.server_context import server
+
+
+class ScriptEngine:
+
+    @staticmethod
+    def generate(
+
+        prompt
+
+    ):
+
+        provider = server.provider_manager.get(
+
+            "ollama"
+
+        )
+
+        return provider.generate(
+
+            prompt
+
+        )

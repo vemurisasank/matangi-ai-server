@@ -1,0 +1,64 @@
+# ==========================
+# Python
+# ==========================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environment
+
+venv/
+.venv/
+
+# Environment
+
+.env
+
+# VS Code
+
+.vscode/
+
+# JetBrains
+
+.idea/
+
+# Logs
+
+logs/
+*.log
+
+# Outputs
+
+outputs/
+projects/
+renders/
+
+# AI Models
+
+models/
+checkpoints/
+loras/
+embeddings/
+vae/
+
+# ComfyUI
+
+ComfyUI/output/
+ComfyUI/input/
+
+# Temporary Files
+
+*.tmp
+*.temp
+
+# OS Files
+
+Thumbs.db
+.DS_Store
+
+# Build
+
+dist/
+build/

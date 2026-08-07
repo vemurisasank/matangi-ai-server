@@ -1,0 +1,6 @@
+{
+    "prompt":"{{prompt}}",
+    "width":"{{width}}",
+    "height":"{{height}}",
+    "seed":"{{seed}}"
+}
