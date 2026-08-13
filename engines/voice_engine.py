@@ -7,12 +7,10 @@ class VoiceEngine:
     def generate(request):
 
         provider = server.provider_manager.get(
-
-            "kokoro"
-
+            "comfyui"
         )
 
-        return provider.generate(
+        return provider.generate_voice(
 
             text=request.text,
 

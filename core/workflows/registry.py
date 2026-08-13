@@ -10,7 +10,9 @@ class WorkflowRegistry:
 
         "inpaint": "flux_inpaint",
 
-        "controlnet": "flux_controlnet"
+        "controlnet": "flux_controlnet",
+
+        "z_image_text_to_image_api.json": "z_image_text_to_image_api.json"
 
     }
 

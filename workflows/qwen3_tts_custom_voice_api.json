@@ -1,0 +1,31 @@
+{
+  "61": {
+    "inputs": {
+      "text": "Hello from Matangi AI Studio.",
+      "speaker": "Ryan",
+      "model_size": "1.7B",
+      "language": "Auto",
+      "instruct": "",
+      "unload_models": true,
+      "seed": -1
+    },
+    "class_type": "AILab_Qwen3TTSCustomVoice",
+    "_meta": {
+      "title": "Qwen3-TTS Custom Voice"
+    }
+  },
+  "57": {
+    "inputs": {
+      "audio": [
+        "61",
+        0
+      ],
+      "filename_prefix": "matangi/voice",
+      "quality": "V0"
+    },
+    "class_type": "SaveAudioMP3",
+    "_meta": {
+      "title": "Save Audio (MP3)"
+    }
+  }
+}

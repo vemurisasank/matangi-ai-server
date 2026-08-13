@@ -1,0 +1,77 @@
+{
+  "5": {
+    "inputs": {
+      "sample_mode": false,
+      "vocal_language": "en",
+      "sample_query": "",
+      "is_instrumental": true,
+      "caption": "Cinematic Indian mythological orchestral music, epic and emotional, powerful drums, traditional Indian instruments, majestic atmosphere",
+      "lyrics": "",
+      "auto": true,
+      "cover_strength": 0.0,
+      "remix_strength": 1.0,
+      "is_repaint": false,
+      "bpm": 120,
+      "key": "",
+      "duration": 10.0,
+      "time_signature": "4",
+      "repaint_start": 0.0,
+      "repaint_end": 0.0,
+      "audio_codes": ""
+    },
+    "class_type": "AceStepText2MusicGenParams",
+    "_meta": {
+      "title": "Text2music Gen Params"
+    }
+  },
+  "6": {
+    "inputs": {
+      "seed": -1,
+      "thinking": true,
+      "use_cot_caption": true,
+      "use_cot_language": true,
+      "temperature": 0.85,
+      "lm_cfg_scale": 2.0,
+      "lm_top_p": 0.9,
+      "lm_top_k": 50,
+      "dit_guidance_scale": 7.0,
+      "dit_inference_steps": 8,
+      "dit_infer_method": "ode"
+    },
+    "class_type": "AceStepSettings",
+    "_meta": {
+      "title": "Settings"
+    }
+  },
+  "7": {
+    "inputs": {
+      "gen_params": [
+        "5",
+        0
+      ],
+      "settings": [
+        "6",
+        0
+      ],
+      "mode": "cloud",
+      "server_url": "https://api.acemusic.ai"
+    },
+    "class_type": "AceStepText2MusicServer",
+    "_meta": {
+      "title": "Text2music Server"
+    }
+  },
+  "8": {
+    "inputs": {
+      "audio": [
+        "7",
+        0
+      ],
+      "filename_prefix": "ace-step/text2music"
+    },
+    "class_type": "SaveAudio",
+    "_meta": {
+      "title": "Save Audio"
+    }
+  }
+}

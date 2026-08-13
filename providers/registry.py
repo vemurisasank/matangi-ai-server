@@ -1,6 +1,8 @@
 from providers.ollama.provider import OllamaProvider
 from providers.flux.provider import FluxProvider
 from providers.comfyui.provider import ComfyUIProvider
+from providers.musicgen.provider import MusicGenProvider
+
 
 class ProviderRegistry:
 
@@ -11,6 +13,11 @@ class ProviderRegistry:
 
         providers["ollama"] = OllamaProvider()
 
-        providers["flux"] = ComfyUIProvider()
+        comfyui = ComfyUIProvider()
+
+        providers["comfyui"] = comfyui
+        providers["flux"] = comfyui
+
+        providers["musicgen"] = MusicGenProvider()
 
         return providers

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from config.settings import settings
 from contextlib import asynccontextmanager
 from core.logger import Logger
@@ -9,6 +10,8 @@ from core.bootstrap_manager import BootstrapManager
 from api.routes.jobs import router as jobs_router
 from api.routes.script import router as script_router
 from api.routes.prompt import router as prompt_router
+from api.routes.scene import router as scene_router
+from api.routes.character import router as character_router
 from api.routes.image import router as image_router
 from api.routes.voice import router as voice_router
 from api.routes.music import router as music_router
@@ -42,6 +45,14 @@ app = FastAPI(
 
     lifespan=lifespan
 
+)
+
+AUDIO_DIR = "/workspace/matangi-ai-server/outputs/audio"
+
+app.mount(
+    "/audio",
+    StaticFiles(directory=AUDIO_DIR),
+    name="audio"
 )
 
 app.include_router(
@@ -120,6 +131,22 @@ app.include_router(
     prompt_router,
 
     tags=["Prompt"]
+
+)
+
+app.include_router(
+
+    scene_router,
+
+    tags=["Scene"]
+
+)
+
+app.include_router(
+
+    character_router,
+
+    tags=["Character"]
 
 )
 

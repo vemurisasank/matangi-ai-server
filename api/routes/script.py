@@ -1,35 +1,59 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
+
+from api.schemas.script_schema import ScriptRequest
+
 from engines.script_engine import ScriptEngine
-from core.server_context import server
+
 from core.response_manager import ResponseManager
+
 
 router = APIRouter()
 
 
-class ScriptRequest(BaseModel):
-
-    prompt: str
-
-
 @router.post("/script")
-def generate_script(request: ScriptRequest):
+
+def generate_script(
+
+    request: ScriptRequest
+
+):
 
     try:
 
         result = ScriptEngine.generate(
 
-        request.prompt
+            title=request.title,
+
+            description=request.description,
+
+            style=request.style,
+
+            language=request.language
 
         )
 
+        if not result.get("success", False):
+
+            return ResponseManager.failure(
+
+                result.get(
+
+                    "message",
+
+                    "Script generation failed."
+
+                )
+
+            )
+
         return ResponseManager.success(
 
-            result,
+            result.get("data", ""),
 
             "Script Generated Successfully"
 
         )
+
     except Exception as e:
 
         return ResponseManager.failure(

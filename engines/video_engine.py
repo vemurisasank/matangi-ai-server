@@ -7,17 +7,14 @@ class VideoEngine:
     def generate(request):
 
         provider = server.provider_manager.get(
-
-            "wan"
-
+            "comfyui"
         )
 
-        return provider.generate(
-
+        return provider.generate_video(
             prompt=request.prompt,
-
             duration=request.duration,
-
-            fps=request.fps
-
+            fps=request.fps,
+            width=request.width,
+            height=request.height,
+            reference_image=request.reference_image
         )

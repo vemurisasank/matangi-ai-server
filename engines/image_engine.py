@@ -6,20 +6,11 @@ class ImageEngine:
     @staticmethod
     def generate(request):
 
-        provider = server.provider_manager.get(
-
-            "flux"
-
-        )
+        provider = server.provider_manager.get("comfyui")
 
         return provider.generate(
-
             request.prompt,
-
             request.width,
-
             request.height,
-
             request.seed
-
         )

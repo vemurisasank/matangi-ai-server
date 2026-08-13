@@ -17,61 +17,107 @@ class OllamaProvider(BaseProvider):
         self.client = OllamaClient()
 
     def generate(
-
         self,
-
         prompt,
-
+        validate_prompt=False,
+        validation_type=None,
         model=settings.TEXT_MODEL
-
     ):
 
         response = self.client.generate(
-
             model,
-
-            prompt
-
-        )
-
-        parsed = ResponseParser.parse(
-
-            response["response"]
-
-        )
-
-        if SchemaValidator.validate_prompt(
-
-            parsed
-
-        ):
-
-            parsed = ResponseNormalizer.normalize_prompt(
-
-                parsed
-
+            prompt,
+            json_mode=(
+                validate_prompt
+                or validation_type is not None
             )
+        )
 
-        else:
+        raw_output = response["response"]
+
+        # --------------------------------------------------
+        # RAW TEXT MODE
+        # --------------------------------------------------
+
+        if not validate_prompt and validation_type is None:
 
             return {
-
-                "success": False,
-
+                "success": True,
                 "provider": "Ollama",
-
-                "message": "Invalid AI Response",
-
-                "output": parsed
-
+                "output": raw_output
             }
 
+        # --------------------------------------------------
+        # PARSE JSON
+        # --------------------------------------------------
+
+        parsed = ResponseParser.parse(
+            raw_output
+        )
+
+        # --------------------------------------------------
+        # PROMPT VALIDATION
+        # --------------------------------------------------
+
+        if validate_prompt:
+
+            if SchemaValidator.validate_prompt(
+                parsed
+            ):
+
+                parsed = ResponseNormalizer.normalize_prompt(
+                    parsed
+                )
+
+            else:
+
+                return {
+                    "success": False,
+                    "provider": "Ollama",
+                    "message": "Invalid AI Response",
+                    "output": parsed
+                }
+
+        # --------------------------------------------------
+        # SCENE VALIDATION
+        # --------------------------------------------------
+
+        elif validation_type == "scene":
+
+            if not SchemaValidator.validate_scene(
+                parsed
+            ):
+
+                return {
+                    "success": False,
+                    "provider": "Ollama",
+                    "message": "Invalid Scene Response",
+                    "output": parsed
+                }
+
+        # --------------------------------------------------
+        # CHARACTER VALIDATION
+        # --------------------------------------------------
+
+        elif validation_type == "character":
+
+            if not SchemaValidator.validate_character(
+                parsed
+            ):
+
+                return {
+                    "success": False,
+                    "provider": "Ollama",
+                    "message": "Invalid Character Response",
+                    "output": parsed
+                }
+
+        # --------------------------------------------------
+        # FINAL RESPONSE
+        # --------------------------------------------------
+
         return {
-
             "success": True,
-
             "provider": "Ollama",
-
             "output": parsed
-
         }

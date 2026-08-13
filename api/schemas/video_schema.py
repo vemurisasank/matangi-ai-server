@@ -12,3 +12,5 @@ class VideoRequest(BaseModel):
     width: int = 1280
 
     height: int = 720
+
+    reference_image: str | None = None
