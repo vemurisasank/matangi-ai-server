@@ -19,7 +19,7 @@ from api.routes.video import router as video_router
 from api.routes.render import router as render_router
 from api.routes.health import router as health_router
 from config.constants import APP_NAME, VERSION
-
+from api.routes.upload import router as upload_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -162,7 +162,7 @@ app.include_router(voice_router, tags=["Voice"])
 app.include_router(music_router, tags=["Music"])
 app.include_router(video_router, tags=["Video"])
 app.include_router(render_router, tags=["Render"])
-
+app.include_router(upload_router, tags=["upload"])
 
 app.include_router(
 

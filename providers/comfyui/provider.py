@@ -1,3 +1,4 @@
+import base64
 from providers.comfyui.client import ComfyUIClient
 from config.settings import settings
 from providers.comfyui.workflow_loader import WorkflowLoader
@@ -56,21 +57,38 @@ class ComfyUIProvider(BaseProvider):
         )
 
         result = self.monitor.wait(prompt_id)
-        
-        image = ComfyUIImageParser.parse(
 
+        image = ComfyUIImageParser.parse(
             result
+        )
+
+        if image is None:
+
+             return {
+                  "success": False,
+                  "provider": "ComfyUI",
+                  "message": "Generated image was not found."
+             }
+
+        image_bytes = self.client.get_image(
+
+        filename=image["filename"],
+
+        subfolder=image.get("subfolder", ""),
+
+        image_type=image.get("type", "output")
 
         )
 
+        image_base64 = base64.b64encode(
+        image_bytes
+        ).decode("utf-8")
+
         return {
-
-            "success": True,
-
-            "provider": "ComfyUI",
-
-            "image": image
-
+             "success": True,
+             "provider": "ComfyUI",
+             "image": image,
+             "image_base64": image_base64
         }
 
         
@@ -122,10 +140,25 @@ class ComfyUIProvider(BaseProvider):
 
                     if item.get("type") == "output":
 
+                        video_bytes = self.client.get_output(
+
+                            filename=item["filename"],
+
+                            subfolder=item.get("subfolder", ""),
+
+                            output_type=item.get("type", "output")
+
+                        )
+
+                        video_base64 = base64.b64encode(
+                            video_bytes
+                        ).decode("utf-8")
+
                         return {
                             "success": True,
                             "provider": "ComfyUI",
-                            "video": item
+                            "video": item,
+                            "video_base64": video_base64
                         }
 
         return {
@@ -133,6 +166,7 @@ class ComfyUIProvider(BaseProvider):
             "provider": "ComfyUI",
             "error": "Video output was not found"
         }
+
 
     def generate_voice(
         self,

@@ -1,4 +1,5 @@
 import json
+import random
 from pathlib import Path
 
 
@@ -24,7 +25,10 @@ class WorkflowLoader:
         workflow["57:13"]["inputs"]["width"] = width
         workflow["57:13"]["inputs"]["height"] = height
         workflow["57:13"]["inputs"]["batch_size"] = 1
+        if seed < 0:
+          seed = random.randint(0, 2**32 - 1)
 
         workflow["57:3"]["inputs"]["seed"] = seed
+        
 
         return workflow
