@@ -11,11 +11,8 @@ router = APIRouter()
 
 
 @router.post("/script")
-
 def generate_script(
-
     request: ScriptRequest
-
 ):
 
     try:
@@ -28,7 +25,9 @@ def generate_script(
 
             style=request.style,
 
-            language=request.language
+            language=request.language,
+
+            task=request.task
 
         )
 
@@ -37,18 +36,18 @@ def generate_script(
             return ResponseManager.failure(
 
                 result.get(
-
                     "message",
-
                     "Script generation failed."
-
                 )
 
             )
 
         return ResponseManager.success(
 
-            result.get("data", ""),
+            result.get(
+                "data",
+                ""
+            ),
 
             "Script Generated Successfully"
 
@@ -57,7 +56,5 @@ def generate_script(
     except Exception as e:
 
         return ResponseManager.failure(
-
             str(e)
-
         )

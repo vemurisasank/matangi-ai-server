@@ -157,7 +157,7 @@
   },
   "320:285": {
     "inputs": {
-      "lora_name": "LTX-2/ltx-2-19b-distilled-lora-384.safetensors",
+      "lora_name": "ltx-2-19b-distilled-lora-384.safetensors",
       "strength_model": 0.5,
       "model": [
         "320:316",
@@ -684,7 +684,7 @@
   },
   "320:324": {
     "inputs": {
-      "lora_name": "LTX-2/ltx-2-19b-distilled-lora-384.safetensors",
+      "lora_name": "ltx-2-19b-distilled-lora-384.safetensors",
       "strength_model": 1.0,
       "strength_clip": 1.0,
       "model": [

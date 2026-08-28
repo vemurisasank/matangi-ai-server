@@ -6,6 +6,7 @@ from core.response_normalizer import ResponseNormalizer
 from config.settings import settings
 from providers.base.provider import BaseProvider
 
+
 class OllamaProvider(BaseProvider):
 
     def __init__(self):
@@ -21,16 +22,26 @@ class OllamaProvider(BaseProvider):
         prompt,
         validate_prompt=False,
         validation_type=None,
-        model=settings.TEXT_MODEL
+        model=settings.TEXT_MODEL,
+        num_predict=None,
+        temperature=None,
+        context_length=None
     ):
 
         response = self.client.generate(
-            model,
-            prompt,
+            model=model,
+            prompt=prompt,
+
             json_mode=(
                 validate_prompt
                 or validation_type is not None
-            )
+            ),
+
+            num_predict=num_predict,
+
+            temperature=temperature,
+
+            context_length=context_length
         )
 
         raw_output = response["response"]

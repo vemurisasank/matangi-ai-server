@@ -10,3 +10,5 @@ class ScriptRequest(BaseModel):
     style: str = "Cinematic"
 
     language: str = "English"
+
+    task: str = "script"
