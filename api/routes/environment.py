@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 
-from api.schemas.character_schema import (
-    CharacterRequest,
-    CharacterExtractionRequest,
-    CharacterProfileRequest,
-    CharacterConceptRequest
+from api.schemas.environment_schema import (
+    EnvironmentRequest,
+    EnvironmentExtractionRequest,
+    EnvironmentProfileRequest,
+    EnvironmentConceptRequest
 )
 
-from engines.character_engine import CharacterEngine
+from engines.environment_engine import EnvironmentEngine
 
 from core.response_manager import ResponseManager
 
@@ -16,44 +16,17 @@ router = APIRouter()
 
 
 # =========================================================
-# NORMAL CHARACTER
+# NORMAL ENVIRONMENT
 # =========================================================
 
-@router.post("/character")
-def generate_character(
-    request: CharacterRequest
+@router.post("/environment")
+def generate_environment(
+    request: EnvironmentRequest
 ):
 
     try:
 
-        result = CharacterEngine.generate(
-            request
-        )
-
-        return ResponseManager.success(
-            result,
-            "Character Generated Successfully"
-        )
-
-    except Exception as e:
-
-        return ResponseManager.failure(
-            str(e)
-        )
-
-
-# =========================================================
-# CHARACTER EXTRACTION
-# =========================================================
-
-@router.post("/character/extract")
-def extract_characters(
-    request: CharacterExtractionRequest
-):
-
-    try:
-
-        result = CharacterEngine.extract(
+        result = EnvironmentEngine.generate(
             request
         )
 
@@ -67,17 +40,17 @@ def extract_characters(
 
 
 # =========================================================
-# CHARACTER PROFILE
+# ENVIRONMENT EXTRACTION
 # =========================================================
 
-@router.post("/character/profile")
-def generate_character_profile(
-    request: CharacterProfileRequest
+@router.post("/environment/extract")
+def extract_environments(
+    request: EnvironmentExtractionRequest
 ):
 
     try:
 
-        result = CharacterEngine.profile(
+        result = EnvironmentEngine.extract(
             request
         )
 
@@ -91,17 +64,41 @@ def generate_character_profile(
 
 
 # =========================================================
-# CHARACTER CONCEPTS
+# ENVIRONMENT PROFILE
 # =========================================================
 
-@router.post("/character/concepts")
-def generate_character_concepts(
-    request: CharacterConceptRequest
+@router.post("/environment/profile")
+def generate_environment_profile(
+    request: EnvironmentProfileRequest
 ):
 
     try:
 
-        result = CharacterEngine.concepts(
+        result = EnvironmentEngine.profile(
+            request
+        )
+
+        return result
+
+    except Exception as e:
+
+        return ResponseManager.failure(
+            str(e)
+        )
+
+
+# =========================================================
+# ENVIRONMENT CONCEPTS
+# =========================================================
+
+@router.post("/environment/concepts")
+def generate_environment_concepts(
+    request: EnvironmentConceptRequest
+):
+
+    try:
+
+        result = EnvironmentEngine.concepts(
             request
         )
 

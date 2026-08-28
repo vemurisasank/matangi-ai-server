@@ -12,6 +12,7 @@ from api.routes.script import router as script_router
 from api.routes.prompt import router as prompt_router
 from api.routes.scene import router as scene_router
 from api.routes.character import router as character_router
+from api.routes.environment import router as environment_router
 from api.routes.image import router as image_router
 from api.routes.voice import router as voice_router
 from api.routes.music import router as music_router
@@ -150,6 +151,9 @@ app.include_router(
 
 )
 
+app.include_router(
+    environment_router
+)
 
 app.include_router(
 

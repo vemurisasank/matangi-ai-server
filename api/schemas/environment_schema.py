@@ -1,13 +1,13 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from pydantic import BaseModel, Field
 
 
 # =========================================================
-# NORMAL CHARACTER
+# NORMAL ENVIRONMENT
 # =========================================================
 
-class CharacterRequest(BaseModel):
+class EnvironmentRequest(BaseModel):
 
     description: str = ""
 
@@ -15,10 +15,10 @@ class CharacterRequest(BaseModel):
 
 
 # =========================================================
-# CHARACTER EXTRACTION
+# MASTER SCRIPT ENVIRONMENT EXTRACTION
 # =========================================================
 
-class CharacterExtractionRequest(BaseModel):
+class EnvironmentExtractionRequest(BaseModel):
 
     script: str = ""
 
@@ -28,12 +28,12 @@ class CharacterExtractionRequest(BaseModel):
 
 
 # =========================================================
-# CHARACTER PROFILE
+# ENVIRONMENT PROFILE
 # =========================================================
 
-class CharacterProfileRequest(BaseModel):
+class EnvironmentProfileRequest(BaseModel):
 
-    character: Dict[str, Any] = Field(
+    environment: Dict[str, Any] = Field(
         default_factory=dict
     )
 
@@ -43,12 +43,12 @@ class CharacterProfileRequest(BaseModel):
 
 
 # =========================================================
-# CHARACTER CONCEPTS
+# ENVIRONMENT CONCEPTS
 # =========================================================
 
-class CharacterConceptRequest(BaseModel):
+class EnvironmentConceptRequest(BaseModel):
 
-    character: Dict[str, Any] = Field(
+    environment: Dict[str, Any] = Field(
         default_factory=dict
     )
 

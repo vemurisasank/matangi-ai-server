@@ -61,3 +61,13 @@ Thumbs.db
 
 dist/
 build/
+# AI model weights - keep locally, do not push to GitHub
+models/acestep/
+models/qwen3-tts/
+models/ollama/
+
+# Local generated/runtime files
+outputs/
+logs/
+__pycache__/
+*.pyc
