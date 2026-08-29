@@ -1,12 +1,17 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+
 from config.settings import settings
-from contextlib import asynccontextmanager
+from config.constants import APP_NAME, VERSION
+
 from core.logger import Logger
 from core.exception_manager import ExceptionManager
+from core.bootstrap_manager import BootstrapManager
+
 from api.routes.models import router as model_router
 from api.routes.providers import router as provider_router
-from core.bootstrap_manager import BootstrapManager
 from api.routes.jobs import router as jobs_router
 from api.routes.script import router as script_router
 from api.routes.prompt import router as prompt_router
@@ -19,12 +24,15 @@ from api.routes.music import router as music_router
 from api.routes.video import router as video_router
 from api.routes.render import router as render_router
 from api.routes.health import router as health_router
-from config.constants import APP_NAME, VERSION
 from api.routes.upload import router as upload_router
+
+
+# =========================================================
+# LIFESPAN
+# =========================================================
 
 @asynccontextmanager
 async def lifespan(app):
-
 
     BootstrapManager.initialize()
 
@@ -38,6 +46,17 @@ async def lifespan(app):
     Logger.info("MATANGI AI SERVER STOPPED")
     Logger.info("=" * 60)
 
+    yield
+
+    Logger.info("=" * 60)
+    Logger.info("MATANGI AI SERVER STOPPED")
+    Logger.info("=" * 60)
+
+
+# =========================================================
+# FASTAPI APPLICATION
+# =========================================================
+
 app = FastAPI(
 
     title=APP_NAME,
@@ -48,44 +67,10 @@ app = FastAPI(
 
 )
 
-AUDIO_DIR = "/workspace/matangi-ai-server/outputs/audio"
 
-app.mount(
-    "/audio",
-    StaticFiles(directory=AUDIO_DIR),
-    name="audio"
-)
-
-app.include_router(
-
-    health_router,
-
-    tags=["Health"]
-
-)
-
-
-@app.get("/")
-
-def root():
-
-    return {
-
-        "success": True,
-
-        "message": f"{APP_NAME} Running"
-
-    }
-@asynccontextmanager
-async def lifespan(app):
-
-    Logger.setup()
-
-    Logger.info("Application Started")
-
-    yield
-
-    Logger.info("Application Closed")
+# =========================================================
+# EXCEPTION HANDLER
+# =========================================================
 
 app.add_exception_handler(
 
@@ -95,6 +80,64 @@ app.add_exception_handler(
 
 )
 
+
+# =========================================================
+# STATIC OUTPUT DIRECTORIES
+# =========================================================
+
+AUDIO_DIR = (
+    "/workspace/matangi-ai-server/outputs/audio"
+)
+
+
+app.mount(
+
+    "/audio",
+
+    StaticFiles(
+        directory=AUDIO_DIR
+    ),
+
+    name="audio"
+
+)
+
+
+# =========================================================
+# ROOT
+# =========================================================
+
+@app.get("/")
+def root():
+
+    return {
+
+        "success": True,
+
+        "message": f"{APP_NAME} Running",
+
+        "version": VERSION
+
+    }
+
+
+# =========================================================
+# HEALTH
+# =========================================================
+
+app.include_router(
+
+    health_router,
+
+    tags=["Health"]
+
+)
+
+
+# =========================================================
+# MODELS
+# =========================================================
+
 app.include_router(
 
     model_router,
@@ -102,6 +145,11 @@ app.include_router(
     tags=["Models"]
 
 )
+
+
+# =========================================================
+# PROVIDERS
+# =========================================================
 
 app.include_router(
 
@@ -111,6 +159,11 @@ app.include_router(
 
 )
 
+
+# =========================================================
+# JOBS
+# =========================================================
+
 app.include_router(
 
     jobs_router,
@@ -118,6 +171,11 @@ app.include_router(
     tags=["Jobs"]
 
 )
+
+
+# =========================================================
+# SCRIPT
+# =========================================================
 
 app.include_router(
 
@@ -127,6 +185,11 @@ app.include_router(
 
 )
 
+
+# =========================================================
+# PROMPT
+# =========================================================
+
 app.include_router(
 
     prompt_router,
@@ -134,6 +197,11 @@ app.include_router(
     tags=["Prompt"]
 
 )
+
+
+# =========================================================
+# SCENE
+# =========================================================
 
 app.include_router(
 
@@ -143,6 +211,11 @@ app.include_router(
 
 )
 
+
+# =========================================================
+# CHARACTER
+# =========================================================
+
 app.include_router(
 
     character_router,
@@ -151,9 +224,23 @@ app.include_router(
 
 )
 
+
+# =========================================================
+# ENVIRONMENT
+# =========================================================
+
 app.include_router(
-    environment_router
+
+    environment_router,
+
+    tags=["Environment"]
+
 )
+
+
+# =========================================================
+# IMAGE
+# =========================================================
 
 app.include_router(
 
@@ -162,15 +249,68 @@ app.include_router(
     tags=["Image"]
 
 )
-app.include_router(voice_router, tags=["Voice"])
-app.include_router(music_router, tags=["Music"])
-app.include_router(video_router, tags=["Video"])
-app.include_router(render_router, tags=["Render"])
-app.include_router(upload_router, tags=["upload"])
+
+
+# =========================================================
+# VOICE
+# =========================================================
 
 app.include_router(
 
-    health_router,
+    voice_router,
 
-    tags=["Health"]
+    tags=["Voice"]
+
+)
+
+
+# =========================================================
+# MUSIC
+# =========================================================
+
+app.include_router(
+
+    music_router,
+
+    tags=["Music"]
+
+)
+
+
+# =========================================================
+# VIDEO
+# =========================================================
+
+app.include_router(
+
+    video_router,
+
+    tags=["Video"]
+
+)
+
+
+# =========================================================
+# RENDER
+# =========================================================
+
+app.include_router(
+
+    render_router,
+
+    tags=["Render"]
+
+)
+
+
+# =========================================================
+# UPLOAD
+# =========================================================
+
+app.include_router(
+
+    upload_router,
+
+    tags=["Upload"]
+
 )
