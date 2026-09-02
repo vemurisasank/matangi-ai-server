@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ImageRequest(BaseModel):
@@ -14,3 +14,7 @@ class ImageRequest(BaseModel):
     height: int = 720
 
     seed: int = -1
+
+    reference_images: list[dict] = Field(
+        default_factory=list
+    )

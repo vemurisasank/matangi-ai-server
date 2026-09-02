@@ -28,7 +28,8 @@ class WorkflowManager:
                 variables["prompt"],
                 variables["width"],
                 variables["height"],
-                variables["seed"]
+                variables["seed"],
+                variables.get("reference_images", [])
             )
 
         else:

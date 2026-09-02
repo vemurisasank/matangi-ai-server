@@ -9,8 +9,9 @@ class ImageEngine:
         provider = server.provider_manager.get("comfyui")
 
         return provider.generate(
-            request.prompt,
-            request.width,
-            request.height,
-            request.seed
+            prompt=request.prompt,
+            width=request.width,
+            height=request.height,
+            seed=request.seed,
+            reference_images=request.reference_images
         )

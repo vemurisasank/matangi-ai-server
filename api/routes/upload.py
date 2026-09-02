@@ -7,8 +7,10 @@ import uuid
 router = APIRouter()
 
 
-COMFY_INPUT_DIR = Path(
-    "/workspace/ComfyUI/input"
+COMFY_INPUT_DIR = (
+    Path(__file__).resolve().parents[2]
+    / "comfyui"
+    / "input"
 )
 
 
@@ -25,7 +27,7 @@ async def upload_reference(
         )
 
         extension = Path(
-            file.filename
+            file.filename or ""
         ).suffix.lower()
 
         if extension not in [

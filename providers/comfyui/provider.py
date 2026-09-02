@@ -17,43 +17,32 @@ class ComfyUIProvider(BaseProvider):
         self.monitor = ComfyUIJobMonitor()
 
     def generate(
-
         self,
-
         prompt,
-
         width,
-
         height,
-
-        seed
-
+        seed,
+        reference_images=None
     ):
+
+        if reference_images is None:
+            reference_images = []
 
         from core.workflows.manager import WorkflowManager
 
         workflow = WorkflowManager.build(
-
             settings.IMAGE_WORKFLOW,
-
             {
-
                 "prompt": prompt,
-
                 "width": width,
-
                 "height": height,
-
-                "seed": seed
-
+                "seed": seed,
+                "reference_images": reference_images
             }
-
         )
 
         prompt_id = self.client.queue_prompt(
-
             workflow
-
         )
 
         result = self.monitor.wait(prompt_id)
@@ -64,31 +53,27 @@ class ComfyUIProvider(BaseProvider):
 
         if image is None:
 
-             return {
-                  "success": False,
-                  "provider": "ComfyUI",
-                  "message": "Generated image was not found."
-             }
+            return {
+                "success": False,
+                "provider": "ComfyUI",
+                "message": "Generated image was not found."
+            }
 
         image_bytes = self.client.get_image(
-
-        filename=image["filename"],
-
-        subfolder=image.get("subfolder", ""),
-
-        image_type=image.get("type", "output")
-
+            filename=image["filename"],
+            subfolder=image.get("subfolder", ""),
+            image_type=image.get("type", "output")
         )
 
         image_base64 = base64.b64encode(
-        image_bytes
+            image_bytes
         ).decode("utf-8")
 
         return {
-             "success": True,
-             "provider": "ComfyUI",
-             "image": image,
-             "image_base64": image_base64
+            "success": True,
+            "provider": "ComfyUI",
+            "image": image,
+            "image_base64": image_base64
         }
 
         
