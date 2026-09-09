@@ -379,9 +379,16 @@ Return ONLY the detailed sequence story.
         # OLLAMA
         # =====================================================
 
+        validation_type = (
+            "movie_structure"
+            if task == "movie_structure"
+            else None
+        )
+
         result = provider.generate(
             prompt,
-            validate_prompt=False
+            validate_prompt=False,
+            validation_type=validation_type
         )
 
         if not result.get("success"):
