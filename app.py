@@ -25,6 +25,7 @@ from api.routes.video import router as video_router
 from api.routes.render import router as render_router
 from api.routes.health import router as health_router
 from api.routes.upload import router as upload_router
+from api.routes.three_d import router as three_d_router
 
 
 # =========================================================
@@ -46,25 +47,15 @@ async def lifespan(app):
     Logger.info("MATANGI AI SERVER STOPPED")
     Logger.info("=" * 60)
 
-    yield
-
-    Logger.info("=" * 60)
-    Logger.info("MATANGI AI SERVER STOPPED")
-    Logger.info("=" * 60)
-
 
 # =========================================================
 # FASTAPI APPLICATION
 # =========================================================
 
 app = FastAPI(
-
     title=APP_NAME,
-
     version=VERSION,
-
     lifespan=lifespan
-
 )
 
 
@@ -73,11 +64,8 @@ app = FastAPI(
 # =========================================================
 
 app.add_exception_handler(
-
     Exception,
-
     ExceptionManager.handle_exception
-
 )
 
 
@@ -89,17 +77,26 @@ AUDIO_DIR = (
     "/workspace/matangi-ai-server/outputs/audio"
 )
 
+THREE_D_DIR = (
+    "/workspace/matangi-ai-server/outputs/3d"
+)
+
 
 app.mount(
-
     "/audio",
-
     StaticFiles(
         directory=AUDIO_DIR
     ),
-
     name="audio"
+)
 
+
+app.mount(
+    "/3d",
+    StaticFiles(
+        directory=THREE_D_DIR
+    ),
+    name="3d"
 )
 
 
@@ -111,13 +108,9 @@ app.mount(
 def root():
 
     return {
-
         "success": True,
-
         "message": f"{APP_NAME} Running",
-
         "version": VERSION
-
     }
 
 
@@ -126,11 +119,8 @@ def root():
 # =========================================================
 
 app.include_router(
-
     health_router,
-
     tags=["Health"]
-
 )
 
 
@@ -139,11 +129,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     model_router,
-
     tags=["Models"]
-
 )
 
 
@@ -152,11 +139,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     provider_router,
-
     tags=["Providers"]
-
 )
 
 
@@ -165,11 +149,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     jobs_router,
-
     tags=["Jobs"]
-
 )
 
 
@@ -178,11 +159,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     script_router,
-
     tags=["Script"]
-
 )
 
 
@@ -191,11 +169,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     prompt_router,
-
     tags=["Prompt"]
-
 )
 
 
@@ -204,11 +179,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     scene_router,
-
     tags=["Scene"]
-
 )
 
 
@@ -217,11 +189,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     character_router,
-
     tags=["Character"]
-
 )
 
 
@@ -230,11 +199,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     environment_router,
-
     tags=["Environment"]
-
 )
 
 
@@ -243,11 +209,18 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     image_router,
-
     tags=["Image"]
+)
 
+
+# =========================================================
+# 3D
+# =========================================================
+
+app.include_router(
+    three_d_router,
+    tags=["3D"]
 )
 
 
@@ -256,11 +229,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     voice_router,
-
     tags=["Voice"]
-
 )
 
 
@@ -269,11 +239,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     music_router,
-
     tags=["Music"]
-
 )
 
 
@@ -282,11 +249,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     video_router,
-
     tags=["Video"]
-
 )
 
 
@@ -295,11 +259,8 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     render_router,
-
     tags=["Render"]
-
 )
 
 
@@ -308,9 +269,6 @@ app.include_router(
 # =========================================================
 
 app.include_router(
-
     upload_router,
-
     tags=["Upload"]
-
 )
