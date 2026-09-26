@@ -13,6 +13,18 @@ class ImageEngine:
         props=None
     ):
         """Prepare an explicit Qwen request with scene-derived references."""
+        requested_model = getattr(request, "model", None)
+
+        if requested_model == "qwen-image-text-to-image":
+            if hasattr(request, "model_copy"):
+                prepared_request = request.model_copy()
+            else:
+                prepared_request = request.copy()
+
+            prepared_request.model = requested_model
+            prepared_request.reference_images = []
+            return prepared_request
+
         package = ReferencePackageBuilder().build(
             scene=scene,
             characters=characters,
@@ -30,7 +42,7 @@ class ImageEngine:
         else:
             prepared_request = request.copy()
 
-        prepared_request.model = "qwen-image-edit-2511"
+        prepared_request.model = requested_model or "qwen-image-edit-2511"
         prepared_request.reference_images = reference_images
 
         return prepared_request
@@ -42,6 +54,7 @@ class ImageEngine:
 
         return provider.generate(
             prompt=request.prompt,
+            negative_prompt=getattr(request, "negative_prompt", ""),
             width=request.width,
             height=request.height,
             seed=request.seed,

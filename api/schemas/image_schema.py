@@ -5,6 +5,8 @@ class ImageRequest(BaseModel):
 
     prompt: str
 
+    negative_prompt: str = ""
+
     style: str = "Cinematic"
 
     aspect_ratio: str = "16:9"

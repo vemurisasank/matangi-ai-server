@@ -34,11 +34,25 @@ class ComfyUIClient:
 
         )
 
-        data = response.json()
+        try:
+            data = response.json()
+        except ValueError as error:
+            raise RuntimeError(
+                "ComfyUI /prompt returned a non-JSON response: "
+                f"HTTP {response.status_code} {response.text}"
+            ) from error
+
         print("=" * 60)
         print("COMFYUI STATUS:", response.status_code)
         print("COMFYUI RESPONSE:", data)
         print("=" * 60)
+
+        if "prompt_id" not in data:
+            raise RuntimeError(
+                "ComfyUI /prompt rejected the workflow: "
+                f"HTTP {response.status_code}; response={data}"
+            )
+
         return data["prompt_id"]
     def get_image(
         self,

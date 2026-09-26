@@ -25,6 +25,7 @@ class ComfyUIProvider(BaseProvider):
         width,
         height,
         seed,
+        negative_prompt="",
         reference_images=None,
         steps=20,
         cfg=4.0,
@@ -44,6 +45,25 @@ class ComfyUIProvider(BaseProvider):
 
             workflow = QwenImageWorkflowLoader.build(
                 prompt=prompt,
+                width=width,
+                height=height,
+                seed=seed,
+                steps=steps,
+                cfg=cfg,
+                sampler=sampler,
+                scheduler=scheduler,
+                reference_images=reference_images
+            )
+
+        elif model == "qwen-image-text-to-image":
+
+            from providers.comfyui.qwen_image_t2i_workflow_loader import (
+                QwenImageT2IWorkflowLoader
+            )
+
+            workflow = QwenImageT2IWorkflowLoader.build(
+                prompt=prompt,
+                negative_prompt=negative_prompt,
                 width=width,
                 height=height,
                 seed=seed,
@@ -104,7 +124,10 @@ class ComfyUIProvider(BaseProvider):
             "image_base64": image_base64
         }
 
-        if model == "qwen-image-edit-2511":
+        if model in {
+            "qwen-image-edit-2511",
+            "qwen-image-text-to-image"
+        }:
             response["model"] = model
 
         return response

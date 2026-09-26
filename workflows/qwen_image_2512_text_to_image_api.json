@@ -1,0 +1,111 @@
+{
+  "245": {
+    "inputs": {
+      "clip_name": "qwen_2.5_vl_7b_fp8_scaled.safetensors",
+      "type": "qwen_image",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader"
+  },
+  "246": {
+    "inputs": {
+      "vae_name": "qwen_image_vae.safetensors"
+    },
+    "class_type": "VAELoader"
+  },
+  "247": {
+    "inputs": {
+      "model": [
+        "248",
+        0
+      ],
+      "shift": 3.1
+    },
+    "class_type": "ModelSamplingAuraFlow"
+  },
+  "248": {
+    "inputs": {
+      "unet_name": "qwen_image_2512_fp8_e4m3fn.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader"
+  },
+  "249": {
+    "inputs": {
+      "clip": [
+        "245",
+        0
+      ],
+      "text": ""
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "250": {
+    "inputs": {
+      "clip": [
+        "245",
+        0
+      ],
+      "text": "低分辨率，低画质，肢体畸形，手指畸形，画面过饱和，蜡像感，人脸无细节，过度光滑，画面具有AI感。构图混乱。文字模糊，扭曲"
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "251": {
+    "inputs": {
+      "samples": [
+        "253",
+        0
+      ],
+      "vae": [
+        "246",
+        0
+      ]
+    },
+    "class_type": "VAEDecode"
+  },
+  "252": {
+    "inputs": {
+      "width": 1328,
+      "height": 1328,
+      "batch_size": 1
+    },
+    "class_type": "EmptySD3LatentImage"
+  },
+  "253": {
+    "inputs": {
+      "model": [
+        "247",
+        0
+      ],
+      "positive": [
+        "249",
+        0
+      ],
+      "negative": [
+        "250",
+        0
+      ],
+      "latent_image": [
+        "252",
+        0
+      ],
+      "seed": 464857551335368,
+      "steps": 50,
+      "cfg": 4,
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "denoise": 1
+    },
+    "class_type": "KSampler"
+  },
+  "save": {
+    "inputs": {
+      "images": [
+        "251",
+        0
+      ],
+      "filename_prefix": "qwen2512/image"
+    },
+    "class_type": "SaveImage"
+  }
+}

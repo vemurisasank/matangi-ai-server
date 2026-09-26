@@ -1,5 +1,6 @@
 import json
 import random
+import shutil
 from pathlib import Path
 
 from PIL import Image, ImageOps
@@ -13,11 +14,13 @@ class QwenImageWorkflowLoader:
         / "qwen_image_edit_2511_api.json"
     )
 
-    COMFY_INPUT_DIR = (
+    STAGING_INPUT_DIR = (
         Path(__file__).resolve().parents[2]
         / "comfyui"
         / "input"
     )
+
+    COMFY_INPUT_DIR = Path("/workspace/ComfyUI/input")
 
     MAX_REFERENCES = 3
     DIMENSION_MULTIPLE = 16
@@ -42,7 +45,10 @@ class QwenImageWorkflowLoader:
             )
 
         safe_filename = Path(str(filename)).name
-        source = cls.COMFY_INPUT_DIR / safe_filename
+        source = cls.STAGING_INPUT_DIR / safe_filename
+
+        if not source.is_file():
+            source = cls.COMFY_INPUT_DIR / safe_filename
 
         if not source.is_file():
             raise FileNotFoundError(
@@ -76,7 +82,7 @@ class QwenImageWorkflowLoader:
             f"matangi_qwen2511_ref_{index}_"
             f"{Path(filename).stem}_{width}x{height}.png"
         )
-        destination = cls.COMFY_INPUT_DIR / normalized_name
+        destination = cls.STAGING_INPUT_DIR / normalized_name
 
         with Image.open(source) as image:
             image = image.convert("RGB")
@@ -106,6 +112,12 @@ class QwenImageWorkflowLoader:
                 normalized.paste(contained, offset)
 
             normalized.save(destination, format="PNG")
+
+        cls.COMFY_INPUT_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(
+            destination,
+            cls.COMFY_INPUT_DIR / normalized_name
+        )
 
         return normalized_name
 

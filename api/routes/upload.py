@@ -7,11 +7,7 @@ import uuid
 router = APIRouter()
 
 
-COMFY_INPUT_DIR = (
-    Path(__file__).resolve().parents[2]
-    / "comfyui"
-    / "input"
-)
+COMFY_INPUT_DIR = Path("/workspace/ComfyUI/input")
 
 
 @router.post("/upload")
