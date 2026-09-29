@@ -48,15 +48,17 @@ class LTXVideoWorkflowLoader:
             workflow["320:296"]["inputs"]["strength"] = 0.7
 
         # Video dimensions.
+        if "320:312" in workflow:
+            workflow["320:312"]["inputs"]["value"] = width
+
         if "320:299" in workflow:
-            workflow["320:299"]["inputs"]["value"] = width
+            workflow["320:299"]["inputs"]["value"] = height
 
         if "320:300" in workflow:
             workflow["320:300"]["inputs"]["value"] = fps
 
-        # Keep the successful workflow's default quality parameters.
         if "320:301" in workflow:
-            workflow["320:301"]["inputs"]["value"] = 5
+            workflow["320:301"]["inputs"]["value"] = duration
 
         # Seed is present in the prompt-generation node.
         if "320:325" in workflow:

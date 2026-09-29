@@ -46,17 +46,20 @@ def _run_image_job(job_id, request):
 
     job.status = "running"
     job.started_on = datetime.now().isoformat()
+    server.job_manager.persist(job)
 
     try:
         job.result = ImageEngine.generate(request)
         job.status = "completed"
         job.progress = 100
         job.completed_on = datetime.now().isoformat()
+        server.job_manager.persist(job)
 
     except Exception as error:
         job.status = "failed"
         job.error = str(error)
         job.completed_on = datetime.now().isoformat()
+        server.job_manager.persist(job)
 
 
 @router.post("/image/jobs")
