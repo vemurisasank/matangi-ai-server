@@ -90,7 +90,7 @@
     "inputs": {
       "cfg": 1.0,
       "model": [
-        "320:316",
+        "320:285",
         0
       ],
       "positive": [
@@ -153,6 +153,20 @@
     "class_type": "LTXVCropGuides",
     "_meta": {
       "title": "LTXVCropGuides"
+    }
+  },
+  "320:285": {
+    "inputs": {
+      "lora_name": "ltx-2-19b-distilled-lora-384.safetensors",
+      "strength_model": 0.5,
+      "model": [
+        "320:316",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "Load LoRA"
     }
   },
   "320:286": {
@@ -569,7 +583,7 @@
     "inputs": {
       "cfg": 1.0,
       "model": [
-        "320:316",
+        "320:285",
         0
       ],
       "positive": [
@@ -668,6 +682,25 @@
       "title": "Math Expression (length)"
     }
   },
+  "320:324": {
+    "inputs": {
+      "lora_name": "ltx-2-19b-distilled-lora-384.safetensors",
+      "strength_model": 1.0,
+      "strength_clip": 1.0,
+      "model": [
+        "320:285",
+        0
+      ],
+      "clip": [
+        "320:317",
+        0
+      ]
+    },
+    "class_type": "LoraLoader",
+    "_meta": {
+      "title": "Load LoRA (Model and CLIP)"
+    }
+  },
   "320:325": {
     "inputs": {
       "prompt": [
@@ -686,8 +719,8 @@
       "thinking": false,
       "use_default_template": true,
       "clip": [
-        "320:317",
-        0
+        "320:324",
+        1
       ],
       "image": [
         "320:286",

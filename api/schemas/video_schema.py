@@ -14,3 +14,7 @@ class VideoRequest(BaseModel):
     height: int = 720
 
     reference_image: str | None = None
+
+    scene_id: str | None = None
+
+    project: str | None = None

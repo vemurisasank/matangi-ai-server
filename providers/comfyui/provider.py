@@ -286,13 +286,9 @@ class ComfyUIProvider(BaseProvider):
         outputs = result.get("outputs", {})
 
         for node in outputs.values():
-
-            if "images" in node:
-
-                for item in node["images"]:
-
+            for output_key in ("videos", "gifs", "images"):
+                for item in node.get(output_key, []):
                     if item.get("type") == "output":
-
                         video_bytes = self.client.get_output(
                             filename=item["filename"],
                             subfolder=item.get("subfolder", ""),

@@ -1,0 +1,241 @@
+{
+  "1": {
+    "inputs": {
+      "ckpt_name": "ltxv-2b-0.9.8-distilled-fp8.safetensors"
+    },
+    "class_type": "CheckpointLoaderSimple"
+  },
+  "2": {
+    "inputs": {
+      "clip_name": "t5xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "ltxv",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader"
+  },
+  "3": {
+    "inputs": {
+      "image": "example.png"
+    },
+    "class_type": "LoadImage"
+  },
+  "4": {
+    "inputs": {
+      "text": "A cinematic scene with subtle natural motion.",
+      "clip": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "5": {
+    "inputs": {
+      "text": "",
+      "clip": [
+        "2",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode"
+  },
+  "6": {
+    "inputs": {
+      "positive": [
+        "4",
+        0
+      ],
+      "negative": [
+        "5",
+        0
+      ],
+      "frame_rate": [
+        "18",
+        0
+      ]
+    },
+    "class_type": "LTXVConditioning"
+  },
+  "7": {
+    "inputs": {
+      "positive": [
+        "6",
+        0
+      ],
+      "negative": [
+        "6",
+        1
+      ],
+      "vae": [
+        "1",
+        2
+      ],
+      "image": [
+        "3",
+        0
+      ],
+      "width": [
+        "16",
+        0
+      ],
+      "height": [
+        "17",
+        0
+      ],
+      "length": [
+        "19",
+        0
+      ],
+      "batch_size": 1,
+      "strength": 1.0
+    },
+    "class_type": "LTXVImgToVideo"
+  },
+  "8": {
+    "inputs": {
+      "model": [
+        "1",
+        0
+      ],
+      "max_shift": 2.05,
+      "base_shift": 0.95,
+      "latent": [
+        "7",
+        2
+      ]
+    },
+    "class_type": "ModelSamplingLTXV"
+  },
+  "9": {
+    "inputs": {
+      "noise_seed": 0
+    },
+    "class_type": "RandomNoise"
+  },
+  "10": {
+    "inputs": {
+      "sampler_name": "euler"
+    },
+    "class_type": "KSamplerSelect"
+  },
+  "11": {
+    "inputs": {
+      "sigmas": "1.0, 0.9937, 0.9875, 0.9812, 0.975, 0.9094, 0.725, 0.4219, 0.0"
+    },
+    "class_type": "ManualSigmas"
+  },
+  "12": {
+    "inputs": {
+      "cfg": 1.0,
+      "model": [
+        "8",
+        0
+      ],
+      "positive": [
+        "7",
+        0
+      ],
+      "negative": [
+        "7",
+        1
+      ]
+    },
+    "class_type": "CFGGuider"
+  },
+  "13": {
+    "inputs": {
+      "noise": [
+        "9",
+        0
+      ],
+      "guider": [
+        "12",
+        0
+      ],
+      "sampler": [
+        "10",
+        0
+      ],
+      "sigmas": [
+        "11",
+        0
+      ],
+      "latent_image": [
+        "7",
+        2
+      ]
+    },
+    "class_type": "SamplerCustomAdvanced"
+  },
+  "14": {
+    "inputs": {
+      "tile_size": 256,
+      "overlap": 64,
+      "temporal_size": 4096,
+      "temporal_overlap": 8,
+      "samples": [
+        "13",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    },
+    "class_type": "VAEDecodeTiled"
+  },
+  "15": {
+    "inputs": {
+      "images": [
+        "14",
+        0
+      ],
+      "fps": [
+        "18",
+        0
+      ],
+      "bit_depth": 8,
+      "color_space": "sRGB",
+      "codec": "none"
+    },
+    "class_type": "CreateVideo"
+  },
+  "16": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "PrimitiveInt"
+  },
+  "17": {
+    "inputs": {
+      "value": 512
+    },
+    "class_type": "PrimitiveInt"
+  },
+  "18": {
+    "inputs": {
+      "value": 24
+    },
+    "class_type": "PrimitiveFloat"
+  },
+  "19": {
+    "inputs": {
+      "value": 121
+    },
+    "class_type": "PrimitiveInt"
+  },
+  "20": {
+    "inputs": {
+      "filename_prefix": "video/ltxv_0_9_8_2b",
+      "format": "mp4",
+      "codec": {
+        "codec": "h264"
+      },
+      "video": [
+        "15",
+        0
+      ]
+    },
+    "class_type": "SaveVideo"
+  }
+}
