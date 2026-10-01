@@ -16,5 +16,7 @@ class VideoEngine:
             fps=request.fps,
             width=request.width,
             height=request.height,
-            reference_image=request.reference_image
+            reference_image=request.reference_image,
+            model=request.model,
+            seed=request.seed
         )

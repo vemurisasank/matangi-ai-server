@@ -18,3 +18,20 @@ class VideoRequest(BaseModel):
     scene_id: str | None = None
 
     project: str | None = None
+
+    model: str | None = None
+
+    seed: int | None = None
+
+
+class AsyncVideoRequest(BaseModel):
+    prompt: str
+    duration: int = 5
+    fps: int = 24
+    width: int = 512
+    height: int = 512
+    reference_image: str | None = None
+    scene_id: str | None = None
+    project: str | None = None
+    model: str | None = None
+    seed: int | None = None

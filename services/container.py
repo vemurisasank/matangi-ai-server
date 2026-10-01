@@ -5,6 +5,8 @@ from core.queue_manager import QueueManager
 from core.worker_manager import WorkerManager
 from core.progress_manager import ProgressManager
 from core.workflows.manager import WorkflowManager
+from core.video_job_manager import VideoJobManager
+from core.video_worker import VideoWorker
 
 from config.settings import settings
 
@@ -28,3 +30,10 @@ class ServiceContainer:
         self.progress_manager = ProgressManager()
 
         self.workflow_manager = WorkflowManager()
+
+        self.video_job_manager = VideoJobManager()
+
+        self.video_worker = VideoWorker(
+            self.video_job_manager,
+            self.provider_manager
+        )

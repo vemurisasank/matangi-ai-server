@@ -253,7 +253,8 @@ class ComfyUIProvider(BaseProvider):
         width=1024,
         height=576,
         reference_image=None,
-        seed=0
+        seed=0,
+        model=None
     ):
 
         if not reference_image:
@@ -261,19 +262,34 @@ class ComfyUIProvider(BaseProvider):
                 "reference_image is required for LTX-2.3 image-to-video"
             )
 
-        from providers.comfyui.video_workflow_loader import (
-            LTXVideoWorkflowLoader
-        )
+        if model == "minimax-h3":
+            from providers.comfyui.minimax_h3_video_workflow_loader import (
+                MiniMaxH3VideoWorkflowLoader
+            )
 
-        workflow = LTXVideoWorkflowLoader.load(
-            prompt=prompt,
-            reference_image=reference_image,
-            width=width,
-            height=height,
-            duration=duration,
-            fps=fps,
-            seed=seed
-        )
+            workflow = MiniMaxH3VideoWorkflowLoader.load(
+                prompt=prompt,
+                reference_image=reference_image,
+                width=width,
+                height=height,
+                duration=duration,
+                fps=fps,
+                seed=0 if seed is None else seed
+            )
+        else:
+            from providers.comfyui.video_workflow_loader import (
+                LTXVideoWorkflowLoader
+            )
+
+            workflow = LTXVideoWorkflowLoader.load(
+                prompt=prompt,
+                reference_image=reference_image,
+                width=width,
+                height=height,
+                duration=duration,
+                fps=fps,
+                seed=0 if seed is None else seed
+            )
 
         prompt_id = self.client.queue_prompt(
             workflow
@@ -311,6 +327,51 @@ class ComfyUIProvider(BaseProvider):
             "provider": "ComfyUI",
             "error": "Video output was not found"
         }
+
+    def submit_video(
+        self,
+        prompt,
+        duration=5,
+        fps=25,
+        width=1024,
+        height=576,
+        reference_image=None,
+        seed=0,
+        model=None
+    ):
+        if model != "minimax-h3":
+            raise ValueError(
+                "Asynchronous video jobs currently support only minimax-h3."
+            )
+        if not reference_image:
+            raise ValueError("reference_image is required for MiniMax H3.")
+
+        from providers.comfyui.minimax_h3_video_workflow_loader import (
+            MiniMaxH3VideoWorkflowLoader
+        )
+
+        workflow = MiniMaxH3VideoWorkflowLoader.load(
+            prompt=prompt,
+            reference_image=reference_image,
+            width=width,
+            height=height,
+            duration=duration,
+            fps=fps,
+            seed=0 if seed is None else seed
+        )
+        return self.client.queue_prompt(workflow)
+
+    def get_video_history(self, prompt_id):
+        return self.client.get_history(prompt_id)
+
+    @staticmethod
+    def find_video_output(result):
+        for node in result.get("outputs", {}).values():
+            for output_key in ("videos", "gifs", "images"):
+                for item in node.get(output_key, []):
+                    if item.get("type") == "output" and item.get("filename"):
+                        return item
+        return None
 
 
     def generate_voice(

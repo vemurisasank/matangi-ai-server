@@ -102,3 +102,12 @@ class ComfyUIClient:
         response.raise_for_status()
 
         return response.content
+
+    def get_history(self, prompt_id):
+        response = requests.get(
+            f"{self.host}/history/{prompt_id}",
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data.get(prompt_id)

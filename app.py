@@ -37,6 +37,9 @@ async def lifespan(app):
 
     BootstrapManager.initialize()
 
+    from core.server_context import server
+    server.video_worker.start()
+
     Logger.info("=" * 60)
     Logger.info("MATANGI AI SERVER STARTED")
     Logger.info("=" * 60)
@@ -46,6 +49,8 @@ async def lifespan(app):
     Logger.info("=" * 60)
     Logger.info("MATANGI AI SERVER STOPPED")
     Logger.info("=" * 60)
+
+    server.video_worker.stop()
 
 
 # =========================================================
