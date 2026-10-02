@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -18,6 +18,8 @@ class VideoJob:
     width: int = 512
     height: int = 512
     reference_image: str | None = None
+    reference_images: list[str] = field(default_factory=list)
+    reference_metadata: list[dict[str, str]] | None = None
     seed: int | None = None
     scene_id: str | None = None
     project: str | None = None

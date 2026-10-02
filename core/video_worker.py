@@ -67,8 +67,10 @@ class VideoWorker:
         try:
             provider = self.provider_manager.get(job.provider)
             if not job.comfy_prompt_id:
-                if not job.reference_image:
-                    raise ValueError("reference_image is required for H3.")
+                if not job.reference_images and not job.reference_image:
+                    raise ValueError(
+                        "reference_image or reference_images is required for H3."
+                    )
                 prompt_id = provider.submit_video(
                     prompt=job.prompt,
                     duration=job.duration,
@@ -76,6 +78,7 @@ class VideoWorker:
                     width=job.width,
                     height=job.height,
                     reference_image=job.reference_image,
+                    reference_images=job.reference_images,
                     seed=job.seed,
                     model=job.model
                 )

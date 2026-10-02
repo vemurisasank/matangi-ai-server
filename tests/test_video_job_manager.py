@@ -21,6 +21,41 @@ def test_video_job_persists_and_reloads(tmp_path):
     assert reloaded is not None
     assert reloaded.comfy_prompt_id == "prompt-1"
     assert reloaded.reference_image == "frame.png"
+    assert reloaded.reference_images == []
+
+
+def test_video_job_persists_ordered_reference_images(tmp_path):
+    path = tmp_path / "video_jobs.json"
+    manager = VideoJobManager(path)
+    manager.create_job(
+        VideoJob(
+            job_id="job-r2v",
+            reference_images=["one.png", "two.png", "three.png"]
+        )
+    )
+
+    reloaded = VideoJobManager(path).get_job("job-r2v")
+
+    assert reloaded is not None
+    assert reloaded.reference_images == ["one.png", "two.png", "three.png"]
+
+
+def test_video_job_persists_reference_metadata(tmp_path):
+    path = tmp_path / "video_jobs.json"
+    manager = VideoJobManager(path)
+    metadata = [{"type": "CHARACTER", "name": "Ganesha"}]
+    manager.create_job(
+        VideoJob(
+            job_id="job-metadata",
+            reference_images=["ganesha.png"],
+            reference_metadata=metadata
+        )
+    )
+
+    reloaded = VideoJobManager(path).get_job("job-metadata")
+
+    assert reloaded is not None
+    assert reloaded.reference_metadata == metadata
 
 
 def test_video_job_persists_output_without_binary(tmp_path):

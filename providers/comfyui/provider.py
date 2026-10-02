@@ -336,6 +336,7 @@ class ComfyUIProvider(BaseProvider):
         width=1024,
         height=576,
         reference_image=None,
+        reference_images=None,
         seed=0,
         model=None
     ):
@@ -343,8 +344,26 @@ class ComfyUIProvider(BaseProvider):
             raise ValueError(
                 "Asynchronous video jobs currently support only minimax-h3."
             )
+        if reference_images:
+            from providers.comfyui.minimax_h3_r2v_workflow_loader import (
+                MiniMaxH3R2VWorkflowLoader
+            )
+
+            workflow = MiniMaxH3R2VWorkflowLoader.load(
+                prompt=prompt,
+                references=reference_images,
+                width=width,
+                height=height,
+                duration=duration,
+                fps=fps,
+                seed=0 if seed is None else seed
+            )
+            return self.client.queue_prompt(workflow)
+
         if not reference_image:
-            raise ValueError("reference_image is required for MiniMax H3.")
+            raise ValueError(
+                "reference_image or reference_images is required for MiniMax H3."
+            )
 
         from providers.comfyui.minimax_h3_video_workflow_loader import (
             MiniMaxH3VideoWorkflowLoader

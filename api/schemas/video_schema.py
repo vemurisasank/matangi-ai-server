@@ -1,4 +1,9 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+
+class ReferenceMetadata(BaseModel):
+    type: str
+    name: str
 
 
 class VideoRequest(BaseModel):
@@ -31,6 +36,12 @@ class AsyncVideoRequest(BaseModel):
     width: int = 512
     height: int = 512
     reference_image: str | None = None
+    reference_images: list[str] = Field(default_factory=list, max_length=9)
+    ref_images: dict[str, str] | None = None
+    reference_metadata: list[ReferenceMetadata] | None = Field(
+        default=None,
+        max_length=9
+    )
     scene_id: str | None = None
     project: str | None = None
     model: str | None = None
