@@ -24,6 +24,10 @@ class VideoJob:
     scene_id: str | None = None
     project: str | None = None
     comfy_prompt_id: str | None = None
+    h3_prompt_id: str | None = None
+    seedvr2_prompt_id: str | None = None
+    stage: str = "h3"
+    intermediate_video_path: str | None = None
     output_filename: str | None = None
     output_subfolder: str = ""
     output_type: str = "output"

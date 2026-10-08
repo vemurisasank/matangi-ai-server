@@ -20,6 +20,17 @@
       "vae_name": "minimax_h3_video_vae_fp16.safetensors"
     }
   },
+  "10": {
+    "class_type": "LoraLoaderModelOnly",
+    "inputs": {
+      "lora_name": "minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors",
+      "strength_model": 1.0,
+      "model": [
+        "2",
+        0
+      ]
+    }
+  },
   "5": {
     "class_type": "VAELoader",
     "inputs": {
@@ -44,7 +55,7 @@
       "prompt": "",
       "width": 1024,
       "height": 704,
-      "length": 124,
+      "length": 447,
       "ref_image_size": "match"
     }
   },
@@ -78,14 +89,14 @@
   "12": {
     "class_type": "PrimitiveInt",
     "inputs": {
-      "value": 20
+      "value": 8
     }
   },
   "15": {
     "class_type": "BasicGuider",
     "inputs": {
       "model": [
-        "2",
+        "10",
         0
       ],
       "conditioning": [

@@ -383,6 +383,14 @@ class ComfyUIProvider(BaseProvider):
     def get_video_history(self, prompt_id):
         return self.client.get_history(prompt_id)
 
+    def submit_seedvr2_video(self, input_video_filename):
+        from providers.comfyui.seedvr2_video_workflow_loader import (
+            SeedVR2VideoWorkflowLoader
+        )
+
+        workflow = SeedVR2VideoWorkflowLoader.load(input_video_filename)
+        return self.client.queue_prompt(workflow)
+
     @staticmethod
     def find_video_output(result):
         for node in result.get("outputs", {}).values():

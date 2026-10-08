@@ -7,7 +7,12 @@ class MiniMaxH3R2VWorkflowLoader:
     MAX_REFERENCES = 9
     DEFAULT_WIDTH = 1024
     DEFAULT_HEIGHT = 704
-    COMPATIBLE_DIMENSIONS = {(512, 512), (1024, 704)}
+    COMPATIBLE_DIMENSIONS = {
+        (512, 512),
+        (640, 352),
+        (1024, 704),
+        (1280, 704)
+    }
     REQUIRED_FPS = 24
     IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp"}
 
@@ -31,7 +36,8 @@ class MiniMaxH3R2VWorkflowLoader:
             raise ValueError("MiniMax H3 requires fps=24.")
         if (width, height) not in cls.COMPATIBLE_DIMENSIONS:
             raise ValueError(
-                "MiniMax H3 R2V requires 512x512 or 1024x704."
+                "MiniMax H3 R2V requires 512x512, 640x352, "
+                "1024x704, or 1280x704."
             )
         if not isinstance(references, (list, tuple)):
             raise ValueError("R2V references must be provided as an ordered list.")

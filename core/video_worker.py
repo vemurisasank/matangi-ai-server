@@ -1,3 +1,4 @@
+import shutil
 import threading
 import time
 from datetime import datetime, timezone
@@ -5,6 +6,9 @@ from pathlib import Path
 
 from core.logger import Logger
 from models.video_job import VideoJob
+
+
+COMFY_INPUT_DIR = Path("/workspace/ComfyUI/input")
 
 
 class VideoWorker:
@@ -50,7 +54,9 @@ class VideoWorker:
         now = _now()
         for job in self.job_manager.list_jobs():
             if job.status == "running":
-                if not job.comfy_prompt_id:
+                if job.stage == "h3" and not (
+                    job.h3_prompt_id or job.comfy_prompt_id
+                ):
                     self.job_manager.update_job(
                         job.job_id,
                         status="failed",
@@ -66,38 +72,95 @@ class VideoWorker:
     def _execute(self, job: VideoJob):
         try:
             provider = self.provider_manager.get(job.provider)
-            if not job.comfy_prompt_id:
-                if not job.reference_images and not job.reference_image:
-                    raise ValueError(
-                        "reference_image or reference_images is required for H3."
+            if job.stage == "h3":
+                h3_prompt_id = job.h3_prompt_id or job.comfy_prompt_id
+                if h3_prompt_id and not job.h3_prompt_id:
+                    self.job_manager.update_job(
+                        job.job_id,
+                        h3_prompt_id=h3_prompt_id,
+                        stage="h3"
                     )
-                prompt_id = provider.submit_video(
-                    prompt=job.prompt,
-                    duration=job.duration,
-                    fps=job.fps,
-                    width=job.width,
-                    height=job.height,
-                    reference_image=job.reference_image,
-                    reference_images=job.reference_images,
-                    seed=job.seed,
-                    model=job.model
+                    job.h3_prompt_id = h3_prompt_id
+                if not h3_prompt_id:
+                    if not job.reference_images and not job.reference_image:
+                        raise ValueError(
+                            "reference_image or reference_images is required for H3."
+                        )
+                    h3_prompt_id = provider.submit_video(
+                        prompt=job.prompt,
+                        duration=job.duration,
+                        fps=job.fps,
+                        width=job.width,
+                        height=job.height,
+                        reference_image=job.reference_image,
+                        reference_images=job.reference_images,
+                        seed=job.seed,
+                        model=job.model
+                    )
+                    self.job_manager.update_job(
+                        job.job_id,
+                        started_at=job.started_at or _now(),
+                        comfy_prompt_id=h3_prompt_id,
+                        h3_prompt_id=h3_prompt_id,
+                        stage="h3"
+                    )
+                    job.h3_prompt_id = h3_prompt_id
+                    job.comfy_prompt_id = h3_prompt_id
+
+                result = self._wait_for_result(provider, h3_prompt_id)
+                output = provider.find_video_output(result)
+                if output is None:
+                    raise RuntimeError(
+                        "H3 video output was not found in ComfyUI history."
+                    )
+                output_path = _output_path(output)
+                if output_path is None:
+                    raise RuntimeError("H3 video output path is invalid.")
+                self.job_manager.update_job(
+                    job.job_id,
+                    status="completed",
+                    stage="completed",
+                    progress=100,
+                    completed_at=_now(),
+                    output_filename=output["filename"],
+                    output_subfolder=output.get("subfolder", ""),
+                    output_type=output.get("type", "output"),
+                    output_path=output_path
+                )
+                return
+
+            if job.stage != "seedvr2":
+                raise RuntimeError(f"Unknown video job stage: {job.stage}")
+
+            if not job.intermediate_video_path:
+                raise RuntimeError("SeedVR2 input video path is missing.")
+
+            seedvr2_prompt_id = job.seedvr2_prompt_id
+            if not seedvr2_prompt_id:
+                seedvr2_prompt_id = provider.submit_seedvr2_video(
+                    Path(job.intermediate_video_path).name
                 )
                 self.job_manager.update_job(
                     job.job_id,
-                    started_at=job.started_at or _now(),
-                    comfy_prompt_id=prompt_id
+                    comfy_prompt_id=seedvr2_prompt_id,
+                    seedvr2_prompt_id=seedvr2_prompt_id,
+                    stage="seedvr2"
                 )
-                job.comfy_prompt_id = prompt_id
+                job.seedvr2_prompt_id = seedvr2_prompt_id
+                job.comfy_prompt_id = seedvr2_prompt_id
 
-            result = self._wait_for_result(provider, job.comfy_prompt_id)
+            result = self._wait_for_result(provider, seedvr2_prompt_id)
             output = provider.find_video_output(result)
             if output is None:
-                raise RuntimeError("Video output was not found in ComfyUI history.")
+                raise RuntimeError(
+                    "SeedVR2 video output was not found in ComfyUI history."
+                )
 
             output_path = _output_path(output)
             self.job_manager.update_job(
                 job.job_id,
                 status="completed",
+                stage="completed",
                 progress=100,
                 completed_at=_now(),
                 output_filename=output["filename"],
@@ -146,3 +209,16 @@ def _output_path(output):
     if root not in path.parents:
         return None
     return str(path)
+
+
+def _stage_intermediate_video(source_path, job_id, source_filename):
+    source = Path(source_path).resolve()
+    output_root = Path("/workspace/ComfyUI/output").resolve()
+    if output_root not in source.parents or not source.is_file():
+        raise RuntimeError(f"H3 intermediate video path is invalid: {source}")
+
+    destination = COMFY_INPUT_DIR / f"matangi_h3_{job_id}_{Path(source_filename).name}"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if not destination.is_file():
+        shutil.copy2(source, destination)
+    return str(destination)
