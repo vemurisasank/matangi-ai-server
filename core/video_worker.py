@@ -3,12 +3,17 @@ import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+import re
 
 from core.logger import Logger
+from config.paths import OUTPUTS
 from models.video_job import VideoJob
+from core.video_frames import VideoFrameResult, extract_last_frame
+from PIL import Image
 
 
 COMFY_INPUT_DIR = Path("/workspace/ComfyUI/input")
+CONTINUITY_OUTPUT_DIR = (OUTPUTS / "continuity").resolve()
 
 
 class VideoWorker:
@@ -116,16 +121,52 @@ class VideoWorker:
                 output_path = _output_path(output)
                 if output_path is None:
                     raise RuntimeError("H3 video output path is invalid.")
+                frame_result = _existing_last_frame(job)
+                frame_error = None
+                if frame_result is None:
+                    frame_destination = _last_frame_destination(job)
+                    self.job_manager.update_job(
+                        job.job_id,
+                        last_frame_status="extracting",
+                        last_frame_error=None
+                    )
+                    try:
+                        frame_result = extract_last_frame(
+                            output_path,
+                            frame_destination
+                        )
+                    except Exception as error:
+                        frame_error = str(error)
+
+                output_changes = {
+                    "status": "completed",
+                    "stage": "completed",
+                    "progress": 100,
+                    "completed_at": _now(),
+                    "output_filename": output["filename"],
+                    "output_subfolder": output.get("subfolder", ""),
+                    "output_type": output.get("type", "output"),
+                    "output_path": output_path
+                }
+                if frame_result is not None:
+                    output_changes.update({
+                        "last_frame_path": frame_result.output_path,
+                        "last_frame_filename": Path(
+                            frame_result.output_path
+                        ).name,
+                        "last_frame_width": frame_result.width,
+                        "last_frame_height": frame_result.height,
+                        "last_frame_status": "ready",
+                        "last_frame_error": None
+                    })
+                else:
+                    output_changes.update({
+                        "last_frame_status": "failed",
+                        "last_frame_error": frame_error
+                    })
                 self.job_manager.update_job(
                     job.job_id,
-                    status="completed",
-                    stage="completed",
-                    progress=100,
-                    completed_at=_now(),
-                    output_filename=output["filename"],
-                    output_subfolder=output.get("subfolder", ""),
-                    output_type=output.get("type", "output"),
-                    output_path=output_path
+                    **output_changes
                 )
                 return
 
@@ -209,6 +250,49 @@ def _output_path(output):
     if root not in path.parents:
         return None
     return str(path)
+
+
+def _last_frame_destination(job: VideoJob) -> Path:
+    project = _safe_path_component(job.project, "unassigned_project")
+    scene = _safe_path_component(job.scene_id, "unassigned_scene")
+    job_id = _safe_path_component(job.job_id, "job")
+    destination = CONTINUITY_OUTPUT_DIR / project / scene / job_id / "last_frame.png"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    return destination
+
+
+def _safe_path_component(value, fallback):
+    component = re.sub(r"[^A-Za-z0-9._-]+", "_", str(value or ""))
+    component = component.strip("._")
+    return component or fallback
+
+
+def _existing_last_frame(job: VideoJob) -> VideoFrameResult | None:
+    if job.last_frame_status != "ready":
+        return None
+    if not job.last_frame_path or not job.last_frame_width or not job.last_frame_height:
+        return None
+
+    path = Path(job.last_frame_path).resolve()
+    if CONTINUITY_OUTPUT_DIR not in path.parents or not path.is_file():
+        return None
+
+    try:
+        with Image.open(path) as image:
+            width, height = image.size
+    except (OSError, ValueError):
+        return None
+
+    if (width, height) != (job.last_frame_width, job.last_frame_height):
+        return None
+
+    return VideoFrameResult(
+        output_path=str(path),
+        width=width,
+        height=height,
+        frame_index=-1,
+        frame_count=-1
+    )
 
 
 def _stage_intermediate_video(source_path, job_id, source_filename):

@@ -78,6 +78,49 @@ def test_video_job_persists_output_without_binary(tmp_path):
     assert "video_base64" not in record
 
 
+def test_video_job_persists_last_frame_metadata(tmp_path):
+    path = tmp_path / "video_jobs.json"
+    manager = VideoJobManager(path)
+    manager.create_job(
+        VideoJob(
+            job_id="job-frame",
+            last_frame_path="/outputs/continuity/job-frame/last_frame.png",
+            last_frame_filename="last_frame.png",
+            last_frame_width=1024,
+            last_frame_height=704,
+            last_frame_status="ready"
+        )
+    )
+
+    reloaded = VideoJobManager(path).get_job("job-frame")
+
+    assert reloaded is not None
+    assert reloaded.last_frame_path.endswith("last_frame.png")
+    assert reloaded.last_frame_filename == "last_frame.png"
+    assert reloaded.last_frame_width == 1024
+    assert reloaded.last_frame_height == 704
+    assert reloaded.last_frame_status == "ready"
+    assert reloaded.last_frame_error is None
+
+
+def test_legacy_video_job_without_last_frame_fields_loads(tmp_path):
+    path = tmp_path / "video_jobs.json"
+    path.write_text(
+        '[{"job_id": "legacy-job", "status": "completed"}]',
+        encoding="utf-8"
+    )
+
+    job = VideoJobManager(path).get_job("legacy-job")
+
+    assert job is not None
+    assert job.last_frame_path is None
+    assert job.last_frame_filename is None
+    assert job.last_frame_width is None
+    assert job.last_frame_height is None
+    assert job.last_frame_status == "not_requested"
+    assert job.last_frame_error is None
+
+
 def test_malformed_video_job_file_raises(tmp_path):
     path = tmp_path / "video_jobs.json"
     path.write_text("{not-json", encoding="utf-8")

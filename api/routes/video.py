@@ -3,18 +3,20 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter
-from fastapi.responses import FileResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, Response
 
 from api.schemas.video_schema import AsyncVideoRequest, VideoRequest
 
 from engines.video_engine import VideoEngine
 
+from config.paths import OUTPUTS
 from core.response_manager import ResponseManager
 from core.server_context import server
 from models.video_job import VideoJob
 
 
 router = APIRouter()
+CONTINUITY_ROOT = (OUTPUTS / "continuity").resolve()
 
 
 @router.post("/video")
@@ -177,6 +179,46 @@ def download_video_job(job_id: str):
         return ResponseManager.failure(
             f"Video output is unavailable: {error}"
         )
+
+
+@router.get("/video/jobs/{job_id}/last-frame")
+def get_video_job_last_frame(job_id: str):
+    job = server.video_job_manager.get_job(job_id)
+    if job is None:
+        return _last_frame_failure("Video job not found.", 404)
+
+    if job.last_frame_status == "failed":
+        return _last_frame_failure(
+            "Last frame is unavailable because extraction failed.",
+            404
+        )
+    if job.last_frame_status != "ready":
+        return _last_frame_failure(
+            "Last frame is not ready yet.",
+            409
+        )
+
+    if not job.last_frame_path:
+        return _last_frame_failure("Last frame is unavailable.", 404)
+
+    frame_path = Path(job.last_frame_path).resolve()
+    if CONTINUITY_ROOT not in frame_path.parents:
+        return _last_frame_failure("Last frame is unavailable.", 404)
+    if not frame_path.is_file():
+        return _last_frame_failure("Last frame is unavailable.", 404)
+
+    return FileResponse(
+        frame_path,
+        media_type="image/png",
+        filename=job.last_frame_filename or frame_path.name
+    )
+
+
+def _last_frame_failure(message, status_code):
+    return JSONResponse(
+        status_code=status_code,
+        content=ResponseManager.failure(message)
+    )
 
 
 def _now():

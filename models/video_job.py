@@ -33,3 +33,9 @@ class VideoJob:
     output_type: str = "output"
     output_path: str | None = None
     error: str | None = None
+    last_frame_path: str | None = None
+    last_frame_filename: str | None = None
+    last_frame_width: int | None = None
+    last_frame_height: int | None = None
+    last_frame_status: str = "not_requested"
+    last_frame_error: str | None = None
