@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 
 from core.logger import Logger
+from core import media_references
 from config.paths import OUTPUTS
 from models.video_job import VideoJob
 from core.video_frames import VideoFrameResult, extract_last_frame
@@ -91,6 +92,17 @@ class VideoWorker:
                         raise ValueError(
                             "reference_image or reference_images is required for H3."
                         )
+                    if job.reference_image:
+                        media_references.validate_reference(
+                            job.reference_image,
+                            "image"
+                        )
+                    for reference in job.reference_images:
+                        media_references.validate_reference(reference, "image")
+                    for reference in job.audio_references or []:
+                        media_references.validate_reference(reference, "audio")
+                    for reference in job.video_references or []:
+                        media_references.validate_reference(reference, "video")
                     h3_prompt_id = provider.submit_video(
                         prompt=job.prompt,
                         duration=job.duration,
@@ -99,6 +111,8 @@ class VideoWorker:
                         height=job.height,
                         reference_image=job.reference_image,
                         reference_images=job.reference_images,
+                        audio_references=job.audio_references or [],
+                        video_references=job.video_references or [],
                         seed=job.seed,
                         model=job.model
                     )

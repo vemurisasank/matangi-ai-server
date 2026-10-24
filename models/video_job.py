@@ -39,3 +39,5 @@ class VideoJob:
     last_frame_height: int | None = None
     last_frame_status: str = "not_requested"
     last_frame_error: str | None = None
+    audio_references: list[str] = field(default_factory=list)
+    video_references: list[str] = field(default_factory=list)

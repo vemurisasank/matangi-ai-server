@@ -40,6 +40,32 @@ def test_video_job_persists_ordered_reference_images(tmp_path):
     assert reloaded.reference_images == ["one.png", "two.png", "three.png"]
 
 
+def test_video_job_persists_ordered_media_references(tmp_path):
+    path = tmp_path / "video_jobs.json"
+    manager = VideoJobManager(path)
+    manager.create_job(
+        VideoJob(
+            job_id="job-media",
+            audio_references=["voice.wav", "music.mp3", "speech.flac"],
+            video_references=["one.mp4", "two.webm", "three.mkv"]
+        )
+    )
+
+    reloaded = VideoJobManager(path).get_job("job-media")
+
+    assert reloaded is not None
+    assert reloaded.audio_references == [
+        "voice.wav",
+        "music.mp3",
+        "speech.flac"
+    ]
+    assert reloaded.video_references == [
+        "one.mp4",
+        "two.webm",
+        "three.mkv"
+    ]
+
+
 def test_video_job_persists_reference_metadata(tmp_path):
     path = tmp_path / "video_jobs.json"
     manager = VideoJobManager(path)
@@ -119,6 +145,20 @@ def test_legacy_video_job_without_last_frame_fields_loads(tmp_path):
     assert job.last_frame_height is None
     assert job.last_frame_status == "not_requested"
     assert job.last_frame_error is None
+
+
+def test_legacy_video_job_without_media_reference_fields_loads(tmp_path):
+    path = tmp_path / "video_jobs.json"
+    path.write_text(
+        '[{"job_id": "legacy-media-job", "status": "queued"}]',
+        encoding="utf-8"
+    )
+
+    job = VideoJobManager(path).get_job("legacy-media-job")
+
+    assert job is not None
+    assert job.audio_references == []
+    assert job.video_references == []
 
 
 def test_malformed_video_job_file_raises(tmp_path):

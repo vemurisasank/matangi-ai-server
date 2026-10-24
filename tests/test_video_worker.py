@@ -3,6 +3,7 @@ from pathlib import Path
 from PIL import Image
 
 import core.video_worker as video_worker
+from core import media_references
 from core.video_frames import VideoFrameResult, VideoFrameExtractionError
 from core.video_job_manager import VideoJobManager
 from models.video_job import VideoJob
@@ -15,9 +16,11 @@ class FakeProvider:
     def __init__(self, output_path):
         self.output_path = output_path
         self.submitted = False
+        self.submitted_kwargs = None
 
     def submit_video(self, **kwargs):
         self.submitted = True
+        self.submitted_kwargs = kwargs
         return "h3-prompt"
 
     def get_video_history(self, prompt_id):
@@ -186,3 +189,100 @@ def test_worker_reuses_valid_existing_last_frame(monkeypatch, tmp_path):
         source.unlink(missing_ok=True)
         frame_path.unlink(missing_ok=True)
 
+
+def test_worker_forwards_media_references(monkeypatch, tmp_path):
+    source = _source_video()
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    for filename in ("frame.png", "one.wav", "two.mp4"):
+        (input_dir / filename).write_bytes(b"reference")
+    monkeypatch.setattr(media_references, "COMFY_INPUT_DIR", input_dir)
+    manager = _job_manager(tmp_path)
+    job = VideoJob(
+        job_id="worker-media-forward",
+        status="running",
+        reference_image="frame.png",
+        audio_references=["one.wav"],
+        video_references=["two.mp4"]
+    )
+    manager.create_job(job)
+    provider = FakeProvider(source)
+    worker = video_worker.VideoWorker(manager, FakeProviderManager(provider))
+    monkeypatch.setattr(
+        video_worker,
+        "extract_last_frame",
+        lambda source_video, output_path: (_ for _ in ()).throw(
+            VideoFrameExtractionError("not needed")
+        )
+    )
+
+    try:
+        worker._execute(job)
+        assert provider.submitted_kwargs["audio_references"] == ["one.wav"]
+        assert provider.submitted_kwargs["video_references"] == ["two.mp4"]
+        assert provider.submitted_kwargs["reference_image"] == "frame.png"
+    finally:
+        source.unlink(missing_ok=True)
+
+
+def test_worker_validation_failure_prevents_provider_submission(
+    monkeypatch,
+    tmp_path
+):
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / "frame.png").write_bytes(b"reference")
+    monkeypatch.setattr(media_references, "COMFY_INPUT_DIR", input_dir)
+    manager = _job_manager(tmp_path)
+    job = VideoJob(
+        job_id="worker-media-missing",
+        status="running",
+        reference_image="frame.png",
+        audio_references=["missing.wav"]
+    )
+    manager.create_job(job)
+    provider = FakeProvider(_source_video())
+    worker = video_worker.VideoWorker(manager, FakeProviderManager(provider))
+
+    try:
+        worker._execute(job)
+        persisted = manager.get_job(job.job_id)
+        assert persisted.status == "failed"
+        assert provider.submitted is False
+        assert persisted.comfy_prompt_id is None
+    finally:
+        provider.output_path.unlink(missing_ok=True)
+
+
+def test_worker_submission_failure_marks_job_failed_without_prompt_id(
+    monkeypatch,
+    tmp_path
+):
+    class FailingProvider(FakeProvider):
+        def submit_video(self, **kwargs):
+            self.submitted = True
+            raise ValueError("submission rejected")
+
+    source = _source_video()
+    input_dir = tmp_path / "input"
+    input_dir.mkdir()
+    (input_dir / source.name).write_bytes(b"reference")
+    monkeypatch.setattr(media_references, "COMFY_INPUT_DIR", input_dir)
+    manager = _job_manager(tmp_path)
+    job = VideoJob(
+        job_id="worker-submit-failure",
+        status="running",
+        reference_image=source.name
+    )
+    manager.create_job(job)
+    provider = FailingProvider(source)
+    worker = video_worker.VideoWorker(manager, FakeProviderManager(provider))
+
+    try:
+        worker._execute(job)
+        persisted = manager.get_job(job.job_id)
+        assert persisted.status == "failed"
+        assert persisted.comfy_prompt_id is None
+        assert persisted.h3_prompt_id is None
+    finally:
+        source.unlink(missing_ok=True)

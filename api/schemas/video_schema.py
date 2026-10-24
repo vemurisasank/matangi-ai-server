@@ -42,6 +42,14 @@ class AsyncVideoRequest(BaseModel):
         default=None,
         max_length=9
     )
+    audio_references: list[str] = Field(
+        default_factory=list,
+        max_length=3
+    )
+    video_references: list[str] = Field(
+        default_factory=list,
+        max_length=3
+    )
     scene_id: str | None = None
     project: str | None = None
     model: str | None = None

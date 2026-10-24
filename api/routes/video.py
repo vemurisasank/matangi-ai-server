@@ -10,6 +10,7 @@ from api.schemas.video_schema import AsyncVideoRequest, VideoRequest
 from engines.video_engine import VideoEngine
 
 from config.paths import OUTPUTS
+from core import media_references
 from core.response_manager import ResponseManager
 from core.server_context import server
 from models.video_job import VideoJob
@@ -78,6 +79,20 @@ def create_video_job(request: AsyncVideoRequest):
         return ResponseManager.failure(
             "reference_image or reference_images is required for MiniMax H3."
         )
+    try:
+        if request.reference_image:
+            media_references.validate_reference(
+                request.reference_image,
+                "image"
+            )
+        for reference in reference_images:
+            media_references.validate_reference(reference, "image")
+        for reference in request.audio_references:
+            media_references.validate_reference(reference, "audio")
+        for reference in request.video_references:
+            media_references.validate_reference(reference, "video")
+    except media_references.MediaReferenceValidationError as error:
+        return ResponseManager.failure(str(error))
 
     prompt = request.prompt
     reference_metadata = None
@@ -107,6 +122,8 @@ def create_video_job(request: AsyncVideoRequest):
         reference_image=request.reference_image,
         reference_images=reference_images,
         reference_metadata=reference_metadata,
+        audio_references=request.audio_references,
+        video_references=request.video_references,
         seed=request.seed,
         scene_id=request.scene_id,
         project=request.project
