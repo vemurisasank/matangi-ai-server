@@ -25,7 +25,8 @@ class ModelRegistry:
 
             "voice": [
 
-                "kokoro"
+                "kokoro",
+                "shankarpandala/chatterbox-telugu"
 
             ],
 

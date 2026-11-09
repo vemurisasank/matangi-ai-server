@@ -5,10 +5,12 @@ from fastapi.staticfiles import StaticFiles
 
 from config.settings import settings
 from config.constants import APP_NAME, VERSION
+from config.paths import VOICE_AUDIO
 
 from core.logger import Logger
 from core.exception_manager import ExceptionManager
 from core.bootstrap_manager import BootstrapManager
+from middleware.request_lifecycle import RequestLifecycleMiddleware
 
 from api.routes.models import router as model_router
 from api.routes.providers import router as provider_router
@@ -20,6 +22,7 @@ from api.routes.character import router as character_router
 from api.routes.environment import router as environment_router
 from api.routes.image import router as image_router
 from api.routes.voice import router as voice_router
+from api.routes.voice_profiles import router as voice_profiles_router
 from api.routes.music import router as music_router
 from api.routes.video import router as video_router
 from api.routes.render import router as render_router
@@ -63,6 +66,8 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.add_middleware(RequestLifecycleMiddleware)
+
 
 # =========================================================
 # EXCEPTION HANDLER
@@ -78,9 +83,7 @@ app.add_exception_handler(
 # STATIC OUTPUT DIRECTORIES
 # =========================================================
 
-AUDIO_DIR = (
-    "/workspace/matangi-ai-server/outputs/audio"
-)
+AUDIO_DIR = str(VOICE_AUDIO)
 
 THREE_D_DIR = (
     "/workspace/matangi-ai-server/outputs/3d"
@@ -236,6 +239,11 @@ app.include_router(
 app.include_router(
     voice_router,
     tags=["Voice"]
+)
+
+app.include_router(
+    voice_profiles_router,
+    tags=["Voice Profiles"]
 )
 
 

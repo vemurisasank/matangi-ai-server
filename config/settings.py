@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     PROJECT_PATH: str
     OUTPUT_PATH: str
 
+    CHATTERBOX_MODEL_PATH: str | None = None
+    CHATTERBOX_DEVICE: str = "auto"
+    CHATTERBOX_T3_MODEL: str = "t3_mtl_te.safetensors"
+    CHATTERBOX_OUTPUT_PATH: str | None = None
+
     model_config = SettingsConfigDict(
         env_file=".env",
         extra="ignore"

@@ -7,6 +7,7 @@ from core.progress_manager import ProgressManager
 from core.workflows.manager import WorkflowManager
 from core.video_job_manager import VideoJobManager
 from core.video_worker import VideoWorker
+from core.voice_profile_manager import VoiceProfileManager
 
 from config.settings import settings
 
@@ -32,6 +33,8 @@ class ServiceContainer:
         self.workflow_manager = WorkflowManager()
 
         self.video_job_manager = VideoJobManager()
+
+        self.voice_profile_manager = VoiceProfileManager()
 
         self.video_worker = VideoWorker(
             self.video_job_manager,

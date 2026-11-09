@@ -1,5 +1,6 @@
 import asyncio
 import io
+import json
 from pathlib import Path
 
 import pytest
@@ -42,19 +43,42 @@ class SizedUpload:
         self.closed = True
 
 
-def run_upload(monkeypatch, tmp_path, filename, content, chunk_size=None):
+class FakeRequest:
+    def __init__(self, content_length=None):
+        self.headers = {}
+        if content_length is not None:
+            self.headers["content-length"] = str(content_length)
+
+
+def run_upload(
+    monkeypatch,
+    tmp_path,
+    filename,
+    content,
+    chunk_size=None,
+    content_length=None,
+):
     monkeypatch.setattr(media_references, "COMFY_INPUT_DIR", tmp_path)
     return asyncio.run(
         upload.upload_reference(
+            FakeRequest(content_length),
             FakeUpload(filename, content, chunk_size=chunk_size)
         )
     )
 
 
-def run_sized_upload(monkeypatch, tmp_path, filename, size, chunk_size=1024):
+def run_sized_upload(
+    monkeypatch,
+    tmp_path,
+    filename,
+    size,
+    chunk_size=1024,
+    content_length=None,
+):
     monkeypatch.setattr(media_references, "COMFY_INPUT_DIR", tmp_path)
     return asyncio.run(
         upload.upload_reference(
+            FakeRequest(content_length),
             SizedUpload(filename, size, chunk_size=chunk_size)
         )
     )
@@ -74,6 +98,20 @@ def test_image_upload_preserves_response_contract(monkeypatch, tmp_path):
     destination = tmp_path / response["data"]["filename"]
     assert destination.is_file()
     assert destination.read_bytes() == b"image"
+
+
+def test_audio_upload_preserves_response_contract(monkeypatch, tmp_path):
+    response = run_upload(
+        monkeypatch,
+        tmp_path,
+        "reference.wav",
+        b"audio",
+    )
+
+    assert response["success"] is True
+    assert response["message"] == "Reference file uploaded successfully."
+    assert set(response["data"]) == {"filename"}
+    assert (tmp_path / response["data"]["filename"]).read_bytes() == b"audio"
 
 
 @pytest.mark.parametrize(
@@ -102,7 +140,8 @@ def test_empty_and_unsupported_filenames_are_rejected(
 ):
     response = run_upload(monkeypatch, tmp_path, filename, b"media")
 
-    assert response == {
+    assert response.status_code == 400
+    assert json.loads(response.body) == {
         "success": False,
         "message": "Unsupported reference file format.",
         "data": None,
@@ -132,8 +171,11 @@ def test_each_media_category_enforces_its_limit(
         chunk_size=3,
     )
 
-    assert response["success"] is False
-    assert response["message"] == "Uploaded file exceeds the permitted size."
+    assert json.loads(response.body)["success"] is False
+    assert json.loads(response.body)["message"] == (
+        "Uploaded file exceeds the permitted size."
+    )
+    assert response.status_code == 413
     assert list(tmp_path.iterdir()) == []
 
 
@@ -149,7 +191,22 @@ def test_oversized_stream_is_rejected_without_partial_destination(
         chunk_size=1024,
     )
 
-    assert response["success"] is False
+    assert json.loads(response.body)["success"] is False
+    assert response.status_code == 413
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_content_length_over_limit_is_rejected_early(monkeypatch, tmp_path):
+    response = run_sized_upload(
+        monkeypatch,
+        tmp_path,
+        "reference.png",
+        10,
+        content_length=20 * 1024 * 1024 + 1,
+    )
+
+    assert response.status_code == 413
+    assert response.body
     assert list(tmp_path.iterdir()) == []
 
 
@@ -183,6 +240,9 @@ def test_existing_destination_is_not_overwritten(monkeypatch, tmp_path):
 
     destination = tmp_path / first["data"]["filename"]
     assert first["success"] is True
-    assert second["success"] is False
-    assert second["message"] == "Unable to store the uploaded reference file."
+    assert json.loads(second.body)["success"] is False
+    assert second.status_code == 500
+    assert json.loads(second.body)["message"] == (
+        "Unable to store the uploaded reference file."
+    )
     assert destination.read_bytes() == b"first"

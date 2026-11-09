@@ -12,3 +12,9 @@ OUTPUTS = ROOT / "outputs"
 MODELS = ROOT / "models"
 
 LOGS = ROOT / "logs"
+
+VOICE_REFERENCES = OUTPUTS / "voice_references"
+
+VOICE_AUDIO = OUTPUTS / "audio"
+
+CHATTERBOX_MODEL_DIR = MODELS / "chatterbox-telugu"
